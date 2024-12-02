@@ -171,7 +171,11 @@ class GPTModel(DeepEvalBaseLLM):
             chat_model = chat_model.with_structured_output(schema=schema)
         with get_openai_callback() as cb:
             res = chat_model.invoke(prompt)
-            return res.content, cb.total_cost
+            if schema:
+                return res, cb.total_cost
+            else:
+                print("Warning! No schema utilised!")
+                return res.content, cb.total_cost
 
     @retry(
         wait=wait_exponential_jitter(initial=1, exp_base=2, jitter=2, max=10),
@@ -184,7 +188,11 @@ class GPTModel(DeepEvalBaseLLM):
             chat_model = chat_model.with_structured_output(schema=schema)
         with get_openai_callback() as cb:
             res = await chat_model.ainvoke(prompt)
-            return res.content, cb.total_cost
+            if schema:
+                return res, cb.total_cost
+            else:
+                print("Warning! No schema utilised!")
+                return res.content, cb.total_cost
 
     @retry(
         wait=wait_exponential_jitter(initial=1, exp_base=2, jitter=2, max=10),

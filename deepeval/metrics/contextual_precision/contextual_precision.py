@@ -133,10 +133,15 @@ class ContextualPrecisionMetric(BaseMetric):
         )
 
         if self.using_native_model:
-            res, cost = await self.model.a_generate(prompt)
-            self.evaluation_cost += cost
-            data = trimAndLoadJson(res, self)
-            return data["reason"]
+            try:
+                res, cost = await self.model.a_generate(prompt, schema=Reason)
+                self.evaluation_cost += cost
+                return res.reason
+            except TypeError:
+                res, cost = await self.model.a_generate(prompt)
+                self.evaluation_cost += cost
+                data = trimAndLoadJson(res, self)
+                return data["reason"]
         else:
             try:
                 res: Reason = await self.model.a_generate(prompt, schema=Reason)
@@ -161,10 +166,15 @@ class ContextualPrecisionMetric(BaseMetric):
         )
 
         if self.using_native_model:
-            res, cost = self.model.generate(prompt)
-            self.evaluation_cost += cost
-            data = trimAndLoadJson(res, self)
-            return data["reason"]
+            try:
+                res, cost = self.model.generate(prompt, schema=Reason)
+                self.evaluation_cost += cost
+                return res.reason
+            except TypeError:
+                res, cost = self.model.generate(prompt)
+                self.evaluation_cost += cost
+                data = trimAndLoadJson(res, self)
+                return data["reason"]
         else:
             try:
                 res: Reason = self.model.generate(prompt, schema=Reason)
@@ -183,13 +193,20 @@ class ContextualPrecisionMetric(BaseMetric):
             retrieval_context=retrieval_context,
         )
         if self.using_native_model:
-            res, cost = await self.model.a_generate(prompt)
-            self.evaluation_cost += cost
-            data = trimAndLoadJson(res, self)
-            verdicts = [
-                ContextualPrecisionVerdict(**item) for item in data["verdicts"]
-            ]
-            return verdicts
+            try:
+                res, cost = await self.model.a_generate(prompt, schema=Verdicts)
+                self.evaluation_cost += cost
+                verdicts = [item for item in res.verdicts]
+                return verdicts
+            except TypeError:
+                res, cost = await self.model.a_generate(prompt)
+                self.evaluation_cost += cost
+                data = trimAndLoadJson(res, self)
+                verdicts = [
+                    ContextualPrecisionVerdict(**item)
+                    for item in data["verdicts"]
+                ]
+                return verdicts
         else:
             try:
                 res: Verdicts = await self.model.a_generate(
@@ -215,13 +232,20 @@ class ContextualPrecisionMetric(BaseMetric):
             retrieval_context=retrieval_context,
         )
         if self.using_native_model:
-            res, cost = self.model.generate(prompt)
-            self.evaluation_cost += cost
-            data = trimAndLoadJson(res, self)
-            verdicts = [
-                ContextualPrecisionVerdict(**item) for item in data["verdicts"]
-            ]
-            return verdicts
+            try:
+                res, cost = self.model.generate(prompt, schema=Verdicts)
+                self.evaluation_cost += cost
+                verdicts = [item for item in res.verdicts]
+                return verdicts
+            except TypeError:
+                res, cost = self.model.generate(prompt)
+                self.evaluation_cost += cost
+                data = trimAndLoadJson(res, self)
+                verdicts = [
+                    ContextualPrecisionVerdict(**item)
+                    for item in data["verdicts"]
+                ]
+                return verdicts
         else:
             try:
                 res: Verdicts = self.model.generate(prompt, schema=Verdicts)
