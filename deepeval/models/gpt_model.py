@@ -165,8 +165,10 @@ class GPTModel(DeepEvalBaseLLM):
         retry=retry_if_exception_type(openai.RateLimitError),
         after=log_retry_error,
     )
-    def generate(self, prompt: str) -> Tuple[str, float]:
+    def generate(self, prompt: str, schema: None) -> Tuple[str, float]:
         chat_model = self.load_model()
+        if schema:
+            chat_model = chat_model.with_structured_output(schema=schema)
         with get_openai_callback() as cb:
             res = chat_model.invoke(prompt)
             return res.content, cb.total_cost
@@ -176,8 +178,10 @@ class GPTModel(DeepEvalBaseLLM):
         retry=retry_if_exception_type(openai.RateLimitError),
         after=log_retry_error,
     )
-    async def a_generate(self, prompt: str) -> Tuple[str, float]:
+    async def a_generate(self, prompt: str, schema: None) -> Tuple[str, float]:
         chat_model = self.load_model()
+        if schema:
+            chat_model = chat_model.with_structured_output(schema=schema)
         with get_openai_callback() as cb:
             res = await chat_model.ainvoke(prompt)
             return res.content, cb.total_cost
